@@ -1,23 +1,25 @@
 package helper
 
 import (
-	"Auth/pkg/utils/models"
 	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt"
+	"Auth/pkg/utils/models"
 )
 
 type authCustomClaimsJobSeeker struct {
-	ID    uint   `json:"id"`
+	Id    uint   `json:"id"`
 	Email string `json:"email"`
+	Role  string `json:"role"`
 	jwt.StandardClaims
 }
 
 func GenerateTokenJobSeeker(jobSeeker models.JobSeekerDetailsResponse) (string, error) {
 	claims := &authCustomClaimsJobSeeker{
-		ID:    jobSeeker.ID,
+		Id:    jobSeeker.ID,
 		Email: jobSeeker.Email,
+		Role:  "jobseeker",
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Hour * 48).Unix(),
 			IssuedAt:  time.Now().Unix(),
@@ -26,10 +28,9 @@ func GenerateTokenJobSeeker(jobSeeker models.JobSeekerDetailsResponse) (string, 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString([]byte("123456789"))
 	if err != nil {
-		fmt.Println("Error generating token:", err)
+		fmt.Println("Error signing token:", err)
 		return "", err
 	}
-
 	return tokenString, nil
 }
 
@@ -42,11 +43,11 @@ func ValidateTokenJobSeeker(tokenString string) (*authCustomClaimsJobSeeker, err
 	})
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse token: %v", err)
 	}
 
 	if claims, ok := token.Claims.(*authCustomClaimsJobSeeker); ok && token.Valid {
 		return claims, nil
 	}
-	return nil, fmt.Errorf("invalid token")
+	return nil, fmt.Errorf("invalid token claims or token is not valid")
 }

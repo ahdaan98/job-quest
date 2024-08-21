@@ -13,8 +13,10 @@ import (
 type authCustomClaimsAdmin struct {
 	Id    uint   `json:"id"`
 	Email string `json:"email"`
+	Role  string `json:"role"` // Added role field
 	jwt.StandardClaims
 }
+
 
 func PasswordHash(password string) (string, error) {
 	hashPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
@@ -28,6 +30,7 @@ func GenerateTokenAdmin(admin models.AdminDetailsResponse) (string, error) {
 	claims := &authCustomClaimsAdmin{
 		Id:    admin.ID,
 		Email: admin.Email,
+		Role:  "admin", // Set role to 'admin'
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Hour * 48).Unix(),
 			IssuedAt:  time.Now().Unix(),
@@ -40,6 +43,7 @@ func GenerateTokenAdmin(admin models.AdminDetailsResponse) (string, error) {
 	}
 	return tokenString, nil
 }
+
 
 func ValidateToken(tokenString string) (*authCustomClaimsAdmin, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &authCustomClaimsAdmin{}, func(token *jwt.Token) (interface{}, error) {

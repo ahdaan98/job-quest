@@ -35,3 +35,9 @@ type JobOpeningResponse struct {
 	UpdatedOn           time.Time `json:"updated_on"`
 	IsDeleted           bool      `json:"is_deleted"`
 }
+
+type SavedJobs struct {
+	ID          uint  `json:"id"`
+	JobID       int64 `json:"job_id" validate:"required"`
+	JobseekerID int64 `json:"jobseeker_id" validate:"required"`
+}

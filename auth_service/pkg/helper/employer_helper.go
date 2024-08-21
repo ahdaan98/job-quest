@@ -2,10 +2,7 @@ package helper
 
 import (
 	"Auth/pkg/utils/models"
-	"crypto/md5"
-	"encoding/hex"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -15,14 +12,17 @@ type authCustomClaimsEmployer struct {
 	Id           uint   `json:"id"`
 	Company_name string `json:"company_name"`
 	Email        string `json:"email"`
+	Role         string `json:"role"` // Add role field
 	jwt.StandardClaims
 }
+
 
 func GenerateTokenEmployer(employer models.EmployerDetailsResponse) (string, error) {
 	claims := &authCustomClaimsEmployer{
 		Id:           employer.ID,
 		Company_name: employer.CompanyName,
 		Email:        employer.ContactEmail,
+		Role:         "employer", // Set role to 'employer'
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Hour * 48).Unix(),
 			IssuedAt:  time.Now().Unix(),
@@ -31,12 +31,12 @@ func GenerateTokenEmployer(employer models.EmployerDetailsResponse) (string, err
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString([]byte("123456789"))
 	if err != nil {
-		fmt.Println("Error is", err)
-		return "", err
+		return "", fmt.Errorf("failed to generate token: %v", err)
 	}
 
 	return tokenString, nil
 }
+
 
 func ValidateTokenEmployer(tokenString string) (*authCustomClaimsEmployer, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &authCustomClaimsEmployer{}, func(token *jwt.Token) (interface{}, error) {
@@ -47,20 +47,11 @@ func ValidateTokenEmployer(tokenString string) (*authCustomClaimsEmployer, error
 	})
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse token: %v", err)
 	}
 
 	if claims, ok := token.Claims.(*authCustomClaimsEmployer); ok && token.Valid {
 		return claims, nil
 	}
 	return nil, fmt.Errorf("invalid token")
-}
-
-func GenerateVideoCallKey(userID, oppositeUser int) (string, error) {
-	currentTime := strconv.FormatInt(time.Now().UnixNano(), 10)
-	key := strconv.Itoa(userID) + "_" + strconv.Itoa(oppositeUser) + "_" + currentTime
-	hash := md5.Sum([]byte(key))
-	keyString := hex.EncodeToString(hash[:])
-
-	return keyString, nil
 }
