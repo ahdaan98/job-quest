@@ -1,12 +1,13 @@
 package middleware
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
-	"github.com/gin-gonic/gin"
 	"github.com/ahdaan67/JobQuest/pkg/helper"
 	"github.com/ahdaan67/JobQuest/pkg/utils/response"
+	"github.com/gin-gonic/gin"
 )
 
 func JobSeekerAuthMiddleware() gin.HandlerFunc {
@@ -37,6 +38,8 @@ func JobSeekerAuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
+		fmt.Printf("job-seeToken Claims: %+v\n", tokenClaims)
+
 		if tokenClaims.Role != "jobseeker" {
 			response := response.ClientResponse(http.StatusForbidden, "Forbidden: Insufficient Role", nil, nil)
 			c.JSON(http.StatusForbidden, response)
@@ -44,7 +47,7 @@ func JobSeekerAuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		jobseekerID := int32(tokenClaims.Id)
+		jobseekerID := tokenClaims.Id
 		c.Set("id", jobseekerID)
 
 		c.Next()

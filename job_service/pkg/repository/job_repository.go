@@ -119,6 +119,44 @@ func (jr *jobRepository) GetJobDetails(jobID int32) (models.JobOpeningResponse, 
 	return job, nil
 }
 
+func (jr *jobRepository) ApplyJob(application models.ApplyJob, resumeURL string) (models.ApplyJobResponse, error) {
+	var jobResponse models.ApplyJobResponse
+
+	var count int64
+	err := jr.DB.Model(&models.ApplyJob{}).
+		Where("jobseeker_id = ? AND job_id = ?", application.JobseekerID, application.JobID).
+		Count(&count).Error
+	if err != nil {
+		return models.ApplyJobResponse{}, fmt.Errorf("error checking if job is already applied: %w", err)
+	}
+
+	if count > 0 {
+		return models.ApplyJobResponse{}, errors.New("job already applied")
+	}
+
+	// Insert new job application
+	result := jr.DB.Exec("INSERT INTO apply_jobs (jobseeker_id, job_id, resume_url, cover_letter) VALUES (?, ?, ?, ?)",
+		application.JobseekerID,
+		application.JobID,
+		resumeURL,
+		application.CoverLetter)
+
+	if result.Error != nil {
+		return models.ApplyJobResponse{}, fmt.Errorf("error inserting into database: %w", result.Error)
+	}
+
+	if result.RowsAffected == 0 {
+		return models.ApplyJobResponse{}, errors.New("no rows were affected during insert")
+	}
+
+	err = jr.DB.Raw("SELECT * FROM apply_jobs WHERE jobseeker_id = ? AND job_id = ?", application.JobseekerID, application.JobID).Scan(&jobResponse).Error
+	if err != nil {
+		return models.ApplyJobResponse{}, fmt.Errorf("failed to get last inserted ID: %w", err)
+	}
+
+	return jobResponse, nil
+}
+
 func (jr *jobRepository) SaveJobs(jobID, userID int64) (models.SavedJobsResponse, error) {
 
 	var savedJobResponse models.SavedJobsResponse

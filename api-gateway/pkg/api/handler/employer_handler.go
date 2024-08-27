@@ -69,14 +69,14 @@ func (eh *EmployerHandler) GetCompanyDetails(c *gin.Context) {
 	}
 
 
-	employerIDInt, ok := employerID.(int32)
+	employerIDInt, ok := employerID.(uint)
 	if !ok {
 		errs := response.ClientResponse(http.StatusBadRequest, "Invalid employer ID type", nil, nil)
 		c.JSON(http.StatusBadRequest, errs)
 		return
 	}
 
-	companyDetails, err := eh.GRPC_Client.GetCompanyDetails(employerIDInt)
+	companyDetails, err := eh.GRPC_Client.GetCompanyDetails(int32(employerIDInt))
 	if err != nil {
 		errs := response.ClientResponse(http.StatusInternalServerError, "Failed to fetch company details", nil, err.Error())
 		c.JSON(http.StatusInternalServerError, errs)
@@ -103,14 +103,14 @@ func (eh *EmployerHandler) UpdateCompany(c *gin.Context) {
 		return
 	}
 
-	employerIDInt, ok := employerID.(int32)
+	employerIDInt, ok := employerID.(uint)
 	if !ok {
 		errs := response.ClientResponse(http.StatusBadRequest, "Invalid employer ID type", nil, nil)
 		c.JSON(http.StatusBadRequest, errs)
 		return
 	}
 
-	updatedCompany, err := eh.GRPC_Client.UpdateCompany(employerIDInt, employerDetails)
+	updatedCompany, err := eh.GRPC_Client.UpdateCompany(int32(employerIDInt), employerDetails)
 	if err != nil {
 		errs := response.ClientResponse(http.StatusInternalServerError, "Failed to update company", nil, err.Error())
 		c.JSON(http.StatusInternalServerError, errs)

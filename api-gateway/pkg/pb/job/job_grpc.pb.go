@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.4.0
 // - protoc             v5.27.1
-// source: job/job.proto
+// source: job.proto
 
 package job
 
@@ -27,6 +27,7 @@ const (
 	Job_UpdateAJob_FullMethodName          = "/job.Job/UpdateAJob"
 	Job_JobSeekerGetAllJobs_FullMethodName = "/job.Job/JobSeekerGetAllJobs"
 	Job_GetJobDetails_FullMethodName       = "/job.Job/GetJobDetails"
+	Job_ApplyJob_FullMethodName            = "/job.Job/ApplyJob"
 	Job_GetJobApplications_FullMethodName  = "/job.Job/GetJobApplications"
 	Job_SaveJobs_FullMethodName            = "/job.Job/SaveJobs"
 	Job_DeleteSavedJob_FullMethodName      = "/job.Job/DeleteSavedJob"
@@ -46,6 +47,7 @@ type JobClient interface {
 	UpdateAJob(ctx context.Context, in *UpdateAJobRequest, opts ...grpc.CallOption) (*UpdateAJobResponse, error)
 	JobSeekerGetAllJobs(ctx context.Context, in *JobSeekerGetAllJobsRequest, opts ...grpc.CallOption) (*JobSeekerGetAllJobsResponse, error)
 	GetJobDetails(ctx context.Context, in *GetJobDetailsRequest, opts ...grpc.CallOption) (*GetJobDetailsResponse, error)
+	ApplyJob(ctx context.Context, in *ApplyJobRequest, opts ...grpc.CallOption) (*ApplyJobResponse, error)
 	GetJobApplications(ctx context.Context, in *GetJobApplicationsRequest, opts ...grpc.CallOption) (*GetJobApplicationsResponse, error)
 	SaveJobs(ctx context.Context, in *SaveJobRequest, opts ...grpc.CallOption) (*SaveJobResponse, error)
 	DeleteSavedJob(ctx context.Context, in *DeleteSavedJobRequest, opts ...grpc.CallOption) (*DeleteSavedJobResponse, error)
@@ -130,6 +132,16 @@ func (c *jobClient) GetJobDetails(ctx context.Context, in *GetJobDetailsRequest,
 	return out, nil
 }
 
+func (c *jobClient) ApplyJob(ctx context.Context, in *ApplyJobRequest, opts ...grpc.CallOption) (*ApplyJobResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApplyJobResponse)
+	err := c.cc.Invoke(ctx, Job_ApplyJob_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *jobClient) GetJobApplications(ctx context.Context, in *GetJobApplicationsRequest, opts ...grpc.CallOption) (*GetJobApplicationsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetJobApplicationsResponse)
@@ -183,6 +195,7 @@ type JobServer interface {
 	UpdateAJob(context.Context, *UpdateAJobRequest) (*UpdateAJobResponse, error)
 	JobSeekerGetAllJobs(context.Context, *JobSeekerGetAllJobsRequest) (*JobSeekerGetAllJobsResponse, error)
 	GetJobDetails(context.Context, *GetJobDetailsRequest) (*GetJobDetailsResponse, error)
+	ApplyJob(context.Context, *ApplyJobRequest) (*ApplyJobResponse, error)
 	GetJobApplications(context.Context, *GetJobApplicationsRequest) (*GetJobApplicationsResponse, error)
 	SaveJobs(context.Context, *SaveJobRequest) (*SaveJobResponse, error)
 	DeleteSavedJob(context.Context, *DeleteSavedJobRequest) (*DeleteSavedJobResponse, error)
@@ -214,6 +227,9 @@ func (UnimplementedJobServer) JobSeekerGetAllJobs(context.Context, *JobSeekerGet
 }
 func (UnimplementedJobServer) GetJobDetails(context.Context, *GetJobDetailsRequest) (*GetJobDetailsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetJobDetails not implemented")
+}
+func (UnimplementedJobServer) ApplyJob(context.Context, *ApplyJobRequest) (*ApplyJobResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ApplyJob not implemented")
 }
 func (UnimplementedJobServer) GetJobApplications(context.Context, *GetJobApplicationsRequest) (*GetJobApplicationsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetJobApplications not implemented")
@@ -366,6 +382,24 @@ func _Job_GetJobDetails_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Job_ApplyJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ApplyJobRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(JobServer).ApplyJob(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Job_ApplyJob_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(JobServer).ApplyJob(ctx, req.(*ApplyJobRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Job_GetJobApplications_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetJobApplicationsRequest)
 	if err := dec(in); err != nil {
@@ -474,6 +508,10 @@ var Job_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Job_GetJobDetails_Handler,
 		},
 		{
+			MethodName: "ApplyJob",
+			Handler:    _Job_ApplyJob_Handler,
+		},
+		{
 			MethodName: "GetJobApplications",
 			Handler:    _Job_GetJobApplications_Handler,
 		},
@@ -491,5 +529,5 @@ var Job_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "job/job.proto",
+	Metadata: "job.proto",
 }

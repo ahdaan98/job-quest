@@ -3,12 +3,15 @@ package config
 import "github.com/spf13/viper"
 
 type Config struct {
-	DBHost     string `mapstructure:"DB_HOST"`
-	DBName     string `mapstructure:"DB_NAME"`
-	DBUser     string `mapstructure:"DB_USER"`
-	DBPort     string `mapstructure:"DB_PORT"`
-	DBPassword string `mapstructure:"DB_PASSWORD"`
-	Port       string `mapstructure:"PORT"`
+	DBHost            string `mapstructure:"DB_HOST"`
+	DBName            string `mapstructure:"DB_NAME"`
+	DBUser            string `mapstructure:"DB_USER"`
+	DBPort            string `mapstructure:"DB_PORT"`
+	DBPassword        string `mapstructure:"DB_PASSWORD"`
+	Port              string `mapstructure:"PORT"`
+	Access_key_ID     string `mapstructure:"Access_key_ID"`
+	Secret_access_key string `mapstructure:"Secret_access_key"`
+	AWSRegion         string `mapstructure:"AWSRegion"`
 }
 
 var envs = []string{

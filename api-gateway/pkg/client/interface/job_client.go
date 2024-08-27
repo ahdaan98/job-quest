@@ -1,6 +1,8 @@
 package interfaces
 
 import (
+	"mime/multipart"
+
 	"github.com/ahdaan67/JobQuest/pkg/utils/models"
 )
 
@@ -12,6 +14,7 @@ type JobClient interface {
 	JobSeekerGetAllJobs(keyword string) ([]models.JobSeekerGetAllJobs, error)
 	GetJobDetails(jobID int32) (models.JobOpeningResponse, error)
 	UpdateAJob(employerIDInt int32, jobID int32, jobDetails models.JobOpening) (models.JobOpeningResponse, error)
+	ApplyJob(jobApplication models.ApplyJob, file *multipart.FileHeader) (models.ApplyJobResponse, error)
 	SaveAJob(userIdInt, jobIdInt int32) (models.SavedJobsResponse, error)
 	DeleteSavedJob(jobIdInt, userIdInt int32) error
 	GetASavedJob(userIdInt int32) ([]models.SavedJobsResponse, error)

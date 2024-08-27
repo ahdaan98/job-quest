@@ -1,11 +1,11 @@
 package service
 
 import (
+	"context"
+	"fmt"
 	pb "job_service/pkg/pb/job"
 	interfaces "job_service/pkg/usecase/interface"
 	"job_service/pkg/utils/models"
-	"context"
-	"fmt"
 	"strconv"
 
 	"google.golang.org/grpc/codes"
@@ -219,6 +219,32 @@ func (js *JobServer) GetJobDetails(ctx context.Context, req *pb.GetJobDetailsReq
 	}
 
 	return jobDetailsResponse, nil
+}
+
+func (js *JobServer) ApplyJob(ctx context.Context, req *pb.ApplyJobRequest) (*pb.ApplyJobResponse, error) {
+	fmt.Println("Applying for job...")
+
+	jobApplication := models.ApplyJob{
+		JobID:       req.JobId,
+		JobseekerID: req.JobseekerId,
+		CoverLetter: req.CoverLetter,
+		Resume:      req.ResumeData,
+	}
+
+	fmt.Printf("Resume size: %d bytes\n", len(req.ResumeData))
+
+	Data, err := js.jobUseCase.ApplyJob(jobApplication, req.ResumeData)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.ApplyJobResponse{
+		Id:          int64(Data.ID),
+		JobId:       Data.JobID,
+		JobseekerId: Data.JobseekerID,
+		CoverLetter: Data.CoverLetter,
+		ResumeUrl:   Data.ResumeURL,
+	}, nil
 }
 
 func (js *JobServer) SaveJobs(ctx context.Context, req *pb.SaveJobRequest) (*pb.SaveJobResponse, error) {

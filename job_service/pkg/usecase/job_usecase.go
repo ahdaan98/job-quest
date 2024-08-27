@@ -3,9 +3,13 @@ package usecase
 import (
 	"errors"
 	"fmt"
+	"job_service/pkg/config"
+	"job_service/pkg/helper"
 	interfaces "job_service/pkg/repository/interface"
 	services "job_service/pkg/usecase/interface"
 	"job_service/pkg/utils/models"
+
+	"github.com/google/uuid"
 )
 
 type jobUseCase struct {
@@ -89,27 +93,29 @@ func (ju *jobUseCase) DeleteAJob(employerIDInt, jobID int32) error {
 	return nil
 }
 func (ju *jobUseCase) UpdateAJob(employerID int32, jobID int32, jobDetails models.JobOpening) (models.JobOpeningResponse, error) {
+    fmt.Printf("Updating job with Employer ID: %d, Job ID: %d\n", employerID, jobID)
 
-	if employerID <= 0 || jobID <= 0 {
-		return models.JobOpeningResponse{}, errors.New("invalid input data")
-	}
+    if employerID <= 0 || jobID <= 0 {
+        return models.JobOpeningResponse{}, errors.New("invalid input data: employerID or jobID is less than or equal to zero")
+    }
 
-	isJobExist, err := ju.jobRepository.IsJobExist(jobID)
-	if err != nil {
-		return models.JobOpeningResponse{}, fmt.Errorf("failed to check if job exists: %v", err)
-	}
+    isJobExist, err := ju.jobRepository.IsJobExist(jobID)
+    if err != nil {
+        return models.JobOpeningResponse{}, fmt.Errorf("failed to check if job exists: %v", err)
+    }
 
-	if !isJobExist {
-		return models.JobOpeningResponse{}, fmt.Errorf("job with ID %d does not exist", jobID)
-	}
+    if !isJobExist {
+        return models.JobOpeningResponse{}, fmt.Errorf("job with ID %d does not exist", jobID)
+    }
 
-	updatedJob, err := ju.jobRepository.UpdateAJob(employerID, jobID, jobDetails)
-	if err != nil {
-		return models.JobOpeningResponse{}, fmt.Errorf("failed to update job: %v", err)
-	}
+    updatedJob, err := ju.jobRepository.UpdateAJob(employerID, jobID, jobDetails)
+    if err != nil {
+        return models.JobOpeningResponse{}, fmt.Errorf("failed to update job: %v", err)
+    }
 
-	return updatedJob, nil
+    return updatedJob, nil
 }
+
 
 func (ju *jobUseCase) JobSeekerGetAllJobs(keyword string) ([]models.JobSeekerGetAllJobs, error) {
 
@@ -156,6 +162,31 @@ func (ju *jobUseCase) GetJobDetails(jobID int32) (models.JobOpeningResponse, err
 	}
 
 	return jobData, nil
+}
+
+func (ju *jobUseCase) ApplyJob(jobApplication models.ApplyJob, resumeData []byte) (models.ApplyJobResponse, error) {
+
+	if jobApplication.JobID <= 0 || jobApplication.JobseekerID <= 0 || jobApplication.CoverLetter == "" {
+		return models.ApplyJobResponse{}, errors.New("invalid input data")
+	}
+
+	fileUID := uuid.New()
+	fileName := fileUID.String()
+	h := helper.NewHelper(config.Config{})
+
+	url, err := h.AddImageToAwsS3(resumeData, fileName)
+	if err != nil {
+		return models.ApplyJobResponse{}, err
+	}
+
+	fmt.Println("url", url)
+
+	Data, err := ju.jobRepository.ApplyJob(jobApplication, url)
+	if err != nil {
+		return models.ApplyJobResponse{}, err
+	}
+
+	return Data, nil
 }
 
 func (uc *jobUseCase) SaveJobs(jobID, userID int64) (models.SavedJobsResponse, error) {

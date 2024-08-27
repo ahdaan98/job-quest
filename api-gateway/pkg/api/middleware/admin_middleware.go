@@ -11,9 +11,10 @@ import (
 
 func AdminAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// Retrieve the Authorization header
+		tokenHeader := c.GetHeader("Authorization")
 
-		tokenHeader := c.GetHeader("Authorization") // Capitalize header key
-
+		// Check if the Authorization header is provided
 		if tokenHeader == "" {
 			response := response.ClientResponse(http.StatusUnauthorized, "No auth header provided", nil, nil)
 			c.JSON(http.StatusUnauthorized, response)
@@ -21,16 +22,19 @@ func AdminAuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
+		// Split the Authorization header to get the token
 		splitted := strings.Split(tokenHeader, " ")
-		if len(splitted) != 2 {
+		if len(splitted) != 2 || splitted[0] != "Bearer" {
 			response := response.ClientResponse(http.StatusUnauthorized, "Invalid Token Format", nil, nil)
 			c.JSON(http.StatusUnauthorized, response)
 			c.Abort()
 			return
 		}
 
-		tokenpart := splitted[1]
-		tokenClaims, err := helper.ValidateToken(tokenpart)
+		tokenPart := splitted[1]
+
+		// Validate the token and extract claims
+		tokenClaims, err := helper.ValidateToken(tokenPart)
 		if err != nil {
 			response := response.ClientResponse(http.StatusUnauthorized, "Invalid Token", nil, err.Error())
 			c.JSON(http.StatusUnauthorized, response)
@@ -38,7 +42,7 @@ func AdminAuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// Check if role is admin (this assumes ValidateToken returns a role field)
+		// Check if the role is admin
 		if tokenClaims.Role != "admin" {
 			response := response.ClientResponse(http.StatusForbidden, "Insufficient permissions", nil, nil)
 			c.JSON(http.StatusForbidden, response)
@@ -46,8 +50,10 @@ func AdminAuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
+		// Store token claims in the context
 		c.Set("tokenClaims", tokenClaims)
 
+		// Proceed to the next handler
 		c.Next()
 	}
 }

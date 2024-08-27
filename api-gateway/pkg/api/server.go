@@ -28,27 +28,29 @@ func NewServerHTTP(adminHandler *handler.AdminHandler, employerHandler *handler.
 	router.POST("/job-seeker/signup", jobSeekerHandler.JobSeekerSignUp)
 	router.POST("/job-seeker/login", jobSeekerHandler.JobSeekerLogin)
 
-	router.Use(middleware.JobSeekerAuthMiddleware())
+	jobSeekerRoutes := router.Group("/")
+	jobSeekerRoutes.Use(middleware.JobSeekerAuthMiddleware())
 	{
-		router.GET("/job-seeker/view-jobs", jobHandler.ViewAllJobs)
-		router.GET("/job-seeker/jobs", jobHandler.GetJobDetails)
-
-		router.GET("/job-seeker/saved-jobs", jobHandler.GetASavedJob)
-		router.POST("/job-seeker/save-jobs", jobHandler.SaveAJob)
-		router.DELETE("/job-seeker/saved-jobs", jobHandler.DeleteSavedJob)
+		jobSeekerRoutes.POST("/job-seeker/apply-job", jobHandler.ApplyJob)
+		jobSeekerRoutes.GET("/job-seeker/view-jobs", jobHandler.ViewAllJobs)
+		jobSeekerRoutes.GET("/job-seeker/jobs", jobHandler.GetJobDetails)
+		jobSeekerRoutes.GET("/job-seeker/saved-jobs", jobHandler.GetASavedJob)
+		jobSeekerRoutes.POST("/job-seeker/save-jobs", jobHandler.SaveAJob)
+		jobSeekerRoutes.DELETE("/job-seeker/saved-jobs", jobHandler.DeleteSavedJob)
 	}
 
-	router.Use(middleware.EmployerAuthMiddleware())
+	// Employer authenticated routes
+	employerRoutes := router.Group("/")
+	employerRoutes.Use(middleware.EmployerAuthMiddleware())
 	{
-		router.POST("/employer/job-post", jobHandler.PostJobOpening)
-		router.GET("/employer/all-job-postings", jobHandler.GetAllJobs)
-		router.GET("/employer/job-postings", jobHandler.GetAJob)
-		router.DELETE("/employer/job-postings", jobHandler.DeleteAJob)
-		router.PUT("/employer/job-postings", jobHandler.UpdateAJob)
+		employerRoutes.POST("/employer/job-post", jobHandler.PostJobOpening)
+		employerRoutes.GET("/employer/all-job-postings", jobHandler.GetAllJobs)
+		employerRoutes.GET("/employer/job-postings", jobHandler.GetAJob)
+		employerRoutes.DELETE("/employer/job-postings", jobHandler.DeleteAJob)
+		employerRoutes.PUT("/employer/job-postings", jobHandler.UpdateAJob)
 
-		router.GET("/employer/company", employerHandler.GetCompanyDetails)
-		router.PUT("/employer/company", employerHandler.UpdateCompany)
-
+		employerRoutes.GET("/employer/company", employerHandler.GetCompanyDetails)
+		employerRoutes.PUT("/employer/company", employerHandler.UpdateCompany)
 	}
 
 	return &ServerHTTP{engine: router}

@@ -1,13 +1,16 @@
 package client
 
 import (
+	"context"
+	"fmt"
+	"io"
+	"mime/multipart"
+	"strconv"
+
 	interfaces "github.com/ahdaan67/JobQuest/pkg/client/interface"
 	"github.com/ahdaan67/JobQuest/pkg/config"
 	pb "github.com/ahdaan67/JobQuest/pkg/pb/job"
 	"github.com/ahdaan67/JobQuest/pkg/utils/models"
-	"context"
-	"fmt"
-	"strconv"
 
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -130,6 +133,7 @@ func (jc *jobClient) DeleteAJob(employerIDInt, jobID int32) error {
 func (jc *jobClient) UpdateAJob(employerIDInt int32, jobID int32, jobDetails models.JobOpening) (models.JobOpeningResponse, error) {
 
 	applicationDeadline := timestamppb.New(jobDetails.ApplicationDeadline)
+	fmt.Println("emp", employerIDInt)
 
 	job, err := jc.Client.UpdateAJob(context.Background(), &pb.UpdateAJobRequest{
 		Title:               jobDetails.Title,
@@ -211,6 +215,43 @@ func (jc *jobClient) GetJobDetails(jobID int32) (models.JobOpeningResponse, erro
 		ApplicationDeadline: applicationDeadlineTime,
 		EmployerID:          resp.EmployerId,
 	}, nil
+}
+
+func (jc *jobClient) ApplyJob(jobApplication models.ApplyJob, file *multipart.FileHeader) (models.ApplyJobResponse, error) {
+	var response models.ApplyJobResponse
+
+	f, err := file.Open()
+	if err != nil {
+		return response, err
+	}
+	defer f.Close()
+
+	fileData, err := io.ReadAll(f)
+	if err != nil {
+		return response, err
+	}
+
+	req := &pb.ApplyJobRequest{
+		JobId:       jobApplication.JobID,
+		JobseekerId: jobApplication.JobseekerID,
+		CoverLetter: jobApplication.CoverLetter,
+		ResumeData:  fileData,
+	}
+
+	grpcResponse, err := jc.Client.ApplyJob(context.Background(), req)
+	if err != nil {
+		return response, err
+	}
+
+	response = models.ApplyJobResponse{
+		ID:          uint(grpcResponse.Id),
+		JobID:       grpcResponse.JobId,
+		JobseekerID: grpcResponse.JobseekerId,
+		CoverLetter: grpcResponse.CoverLetter,
+		ResumeURL:   grpcResponse.ResumeUrl,
+	}
+
+	return response, nil
 }
 
 func (jc *jobClient) SaveAJob(userIdInt, jobIdInt int32) (models.SavedJobsResponse, error) {

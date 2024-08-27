@@ -41,3 +41,20 @@ type SavedJobs struct {
 	JobID       int64 `json:"job_id" validate:"required"`
 	JobseekerID int64 `json:"jobseeker_id" validate:"required"`
 }
+
+type ApplyJob struct {
+	ID          uint   `json:"id"`
+	JobseekerID int64  `json:"jobseeker_id" validate:"required"`
+	JobID       int64  `json:"job_id" validate:"required"`
+	Resume      []byte `json:"resume" validate:"required"`
+	ResumeURL   string `json:"resume_url" validate:"required"`
+	CoverLetter string `json:"cover_letter" validate:"lte=500"`
+}
+
+type ApplyJobResponse struct {
+	ID          uint   `json:"id"`
+	JobseekerID int64  `json:"jobseeker_id" validate:"required"`
+	JobID       int64  `json:"job_id" validate:"required"`
+	ResumeURL   string `json:"resume_url" validate:"required"`
+	CoverLetter string `json:"cover_letter" validate:"lte=500"`
+}

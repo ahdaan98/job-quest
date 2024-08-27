@@ -1,17 +1,19 @@
 package middleware
 
 import (
-	"github.com/ahdaan67/JobQuest/pkg/helper"
-	"github.com/ahdaan67/JobQuest/pkg/utils/response"
+	"fmt"
 	"net/http"
 	"strings"
+
+	"github.com/ahdaan67/JobQuest/pkg/helper"
+	"github.com/ahdaan67/JobQuest/pkg/utils/response"
 
 	"github.com/gin-gonic/gin"
 )
 
 func EmployerAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		tokenHeader := c.GetHeader("Authorization") // Ensure the correct capitalization
+		tokenHeader := c.GetHeader("Authorization")
 
 		if tokenHeader == "" {
 			response := response.ClientResponse(http.StatusUnauthorized, "No auth header provided", nil, nil)
@@ -21,7 +23,7 @@ func EmployerAuthMiddleware() gin.HandlerFunc {
 		}
 
 		splitted := strings.Split(tokenHeader, " ")
-		if len(splitted) != 2 {
+		if len(splitted) != 2 || splitted[0] != "Bearer" {
 			response := response.ClientResponse(http.StatusUnauthorized, "Invalid Token Format", nil, nil)
 			c.JSON(http.StatusUnauthorized, response)
 			c.Abort()
@@ -37,17 +39,17 @@ func EmployerAuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// Optional: Check if the role is correct
+		fmt.Printf("Token Claims: %+v\n", tokenClaims)
+
 		if tokenClaims.Role != "employer" {
-			response := response.ClientResponse(http.StatusUnauthorized, "Unauthorized role", nil, nil)
-			c.JSON(http.StatusUnauthorized, response)
+			response := response.ClientResponse(http.StatusForbidden, "Forbidden: Insufficient Role", nil, nil)
+			c.JSON(http.StatusForbidden, response)
 			c.Abort()
 			return
 		}
 
-		// Store the claims in the context if needed later
 		c.Set("id", tokenClaims.Id)
-		c.Set("role", tokenClaims.Role)
+        c.Set("role", tokenClaims.Role)
 
 		c.Next()
 	}
