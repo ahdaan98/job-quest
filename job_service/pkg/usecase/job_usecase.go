@@ -119,9 +119,9 @@ func (ju *jobUseCase) UpdateAJob(employerID int32, jobID int32, jobDetails model
 
 func (ju *jobUseCase) JobSeekerGetAllJobs(keyword string) ([]models.JobSeekerGetAllJobs, error) {
 
-	if keyword == "" {
-		return []models.JobSeekerGetAllJobs{}, errors.New("invalid input data")
-	}
+	// if keyword == "" {
+	// 	return []models.JobSeekerGetAllJobs{}, errors.New("invalid input data")
+	// }
 
 	jobs, err := ju.jobRepository.JobSeekerGetAllJobs(keyword)
 	if err != nil {
@@ -189,6 +189,31 @@ func (ju *jobUseCase) ApplyJob(jobApplication models.ApplyJob, resumeData []byte
 	return Data, nil
 }
 
+func (ju *jobUseCase) GetApplicants(employerID int64) ([]models.ApplyJobResponse, error) {
+
+	if employerID <= 0 {
+		return []models.ApplyJobResponse{}, errors.New("cannot use negative values")
+	}
+
+	jobid, err := ju.jobRepository.GetJobIDByEmployerID(employerID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check if job exists: %v", err)
+	}
+
+	fmt.Println("jobid", jobid)
+
+	var allApplicants []models.ApplyJobResponse
+    for _, jobID := range jobid {
+        applicants, err := ju.jobRepository.GetApplicantsByEmployerID(int64(jobID.ID))
+        if err != nil {
+            return nil, fmt.Errorf("failed to get applicants for job ID %d: %v", jobID.ID, err)
+        }
+        allApplicants = append(allApplicants, applicants...)
+    }
+
+    return allApplicants, nil
+}
+
 func (uc *jobUseCase) SaveJobs(jobID, userID int64) (models.SavedJobsResponse, error) {
 
 	if jobID <= 0 || userID <= 0 {
@@ -251,4 +276,33 @@ func (ju *jobUseCase) GetSavedJobs(userIdInt int32) ([]models.SavedJobsResponse,
 	}
 
 	return savedJobs, nil
+}
+
+func (ju *jobUseCase) UpdateApplyJob(applyJobID uint, status string) (uint,uint,error) {
+	if applyJobID <= 0 {
+		return 0,0, errors.New("invalid applyJobID")
+	}
+
+	// Update the status of the job application and retrieve the jobSeekerID
+	jobSeekerID,jobID, err := ju.jobRepository.UpdateApplyJobStatus(applyJobID, status)
+	if err != nil {
+		return 0,0, fmt.Errorf("failed to update job application status: %v", err)
+	}
+
+	// Return the jobSeekerID along with a nil error if successful
+	return jobSeekerID,jobID, nil
+}
+
+func (ju *jobUseCase) GetApplicantsByStatus(jobID int64, status string) ([]models.ApplyJobResponse, error) {
+	if jobID <= 0 {
+		return nil, errors.New("invalid jobID")
+	}
+
+	// Retrieve the list of accepted applicants for the given jobID
+	acceptedApplicants, err := ju.jobRepository.GetApplicants(jobID,status)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get accepted applicants: %v", err)
+	}
+
+	return acceptedApplicants, nil
 }

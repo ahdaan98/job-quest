@@ -3,6 +3,7 @@ package repository
 import (
 	"errors"
 	"fmt"
+	"job_service/pkg/domain"
 	interfaces "job_service/pkg/repository/interface"
 	"job_service/pkg/utils/models"
 	"time"
@@ -78,17 +79,37 @@ func (jr *jobRepository) IsJobExist(jobID int32) (bool, error) {
 	return true, nil
 }
 
-func (jr *jobRepository) GetJobIDByEmployerID(employerID int64) (int64, error) {
-	var job models.JobOpeningResponse
+func (jr *jobRepository) GetJobIDByEmployerID(employerID int64) ([]models.JobOpeningResponse, error) {
+	var job []models.JobOpeningResponse
 
 	if err := jr.DB.Model(&models.JobOpeningResponse{}).Where("employer_id = ?", employerID).Scan(&job).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return 0, nil
+			return nil, nil
 		}
-		return 0, err
+		return nil, err
 	}
 
-	return int64(job.ID), nil
+	return job, nil
+}
+
+func (jr *jobRepository) GetApplicantsByEmployerID(jobID int64) ([]models.ApplyJobResponse, error) {
+	var applicants []models.ApplyJobResponse
+
+	fmt.Println("Job ID:", jobID)
+
+	query := "SELECT * FROM apply_jobs WHERE job_id = ?"
+	if err := jr.DB.Raw(query, jobID).Scan(&applicants).Error; err != nil {
+		return nil, fmt.Errorf("error executing query: %w", err)
+	}
+
+	// Check if applicants are retrieved
+	if len(applicants) == 0 {
+		fmt.Println("No applicants found for job ID:", jobID)
+	} else {
+		fmt.Println("Retrieved applicants:", applicants)
+	}
+
+	return applicants, nil
 }
 
 func (jr *jobRepository) DeleteAJob(employerID, jobID int32) error {
@@ -102,7 +123,7 @@ func (jr *jobRepository) DeleteAJob(employerID, jobID int32) error {
 func (jr *jobRepository) JobSeekerGetAllJobs(keyword string) ([]models.JobOpeningResponse, error) {
 	var jobSeekerJobs []models.JobOpeningResponse
 
-	if err := jr.DB.Where("title ILIKE ?", "%"+keyword+"%").Find(&jobSeekerJobs).Error; err != nil {
+	if err := jr.DB.Find(&jobSeekerJobs).Error; err != nil {
 		return nil, fmt.Errorf("failed to query jobs: %v", err)
 	}
 
@@ -122,6 +143,10 @@ func (jr *jobRepository) GetJobDetails(jobID int32) (models.JobOpeningResponse, 
 func (jr *jobRepository) ApplyJob(application models.ApplyJob, resumeURL string) (models.ApplyJobResponse, error) {
 	var jobResponse models.ApplyJobResponse
 
+	// Debug: Print the input values
+	fmt.Printf("Applying for job with jobseeker_id=%d and job_id=%d\n", application.JobseekerID, application.JobID)
+
+	// Check if the job has already been applied
 	var count int64
 	err := jr.DB.Model(&models.ApplyJob{}).
 		Where("jobseeker_id = ? AND job_id = ?", application.JobseekerID, application.JobID).
@@ -129,6 +154,9 @@ func (jr *jobRepository) ApplyJob(application models.ApplyJob, resumeURL string)
 	if err != nil {
 		return models.ApplyJobResponse{}, fmt.Errorf("error checking if job is already applied: %w", err)
 	}
+
+	// Debug: Print the count of existing applications
+	fmt.Printf("Count of existing applications: %d\n", count)
 
 	if count > 0 {
 		return models.ApplyJobResponse{}, errors.New("job already applied")
@@ -149,10 +177,16 @@ func (jr *jobRepository) ApplyJob(application models.ApplyJob, resumeURL string)
 		return models.ApplyJobResponse{}, errors.New("no rows were affected during insert")
 	}
 
-	err = jr.DB.Raw("SELECT * FROM apply_jobs WHERE jobseeker_id = ? AND job_id = ?", application.JobseekerID, application.JobID).Scan(&jobResponse).Error
+	// Retrieve the inserted record
+	err = jr.DB.Raw("SELECT id, jobseeker_id, job_id, resume_url, cover_letter FROM apply_jobs WHERE jobseeker_id = ? AND job_id = ?",
+		application.JobseekerID,
+		application.JobID).Scan(&jobResponse).Error
 	if err != nil {
-		return models.ApplyJobResponse{}, fmt.Errorf("failed to get last inserted ID: %w", err)
+		return models.ApplyJobResponse{}, fmt.Errorf("failed to retrieve inserted record: %w", err)
 	}
+
+	// Debug: Print the retrieved job response
+	fmt.Printf("Retrieved job response: %+v\n", jobResponse)
 
 	return jobResponse, nil
 }
@@ -230,4 +264,47 @@ func (jr *jobRepository) UpdateAJob(employerID int32, jobID int32, jobDetails mo
 	}
 
 	return updatedJob, nil
+}
+
+func (jr *jobRepository) UpdateApplyJobStatus(applyJobID uint, status string) (uint, uint, error) {
+	var jobSeekerID uint
+	var jobID uint
+
+	// Fetch the jobSeekerID and jobID based on applyJobID
+	if err := jr.DB.Model(&domain.ApplyJob{}).
+		Select("jobseeker_id").
+		Where("id = ?", applyJobID).
+		Scan(&jobSeekerID).Error; err != nil {
+		return 0, 0, err
+	}
+
+	if err := jr.DB.Model(&domain.ApplyJob{}).
+		Select("job_id").
+		Where("id = ?", applyJobID).
+		Scan(&jobID).Error; err != nil {
+		return 0, 0, err
+	}
+
+	// Update the status of the job application
+	if err := jr.DB.Model(&domain.ApplyJob{}).Where("id = ?", applyJobID).Update("status", status).Error; err != nil {
+		return 0, 0, err
+	}
+
+	return jobSeekerID, jobID, nil
+}
+func (jr *jobRepository) GetApplicants(JobID int64, status string) ([]models.ApplyJobResponse, error) {
+	var acceptedApplicants []models.ApplyJobResponse
+
+	// Define the query to select the accepted applicants for the given jobID
+	query := `SELECT id, jobseeker_id, job_id, resume_url, cover_letter 
+              FROM apply_jobs 
+              WHERE job_id = ? AND status = ?`
+
+	// Execute the query and scan the results into the acceptedApplicants slice
+	err := jr.DB.Raw(query, JobID, status).Scan(&acceptedApplicants).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return acceptedApplicants, nil
 }

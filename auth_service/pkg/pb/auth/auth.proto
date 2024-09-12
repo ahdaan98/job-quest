@@ -169,6 +169,48 @@ message EmployerDetailsResponse {
 service JobSeeker {
     rpc JobSeekerSignup(JobSeekerSignupRequest) returns (JobSeekerSignupResponse) {};
     rpc JobSeekerLogin(JobSeekerLoginRequest) returns (JobSeekerLoginResponse) {};
+    rpc JobSeekerOTPSignUp(JobSeekerSignupRequest) returns (JobSeekerOTPSignUpResponse) {};
+    rpc JobSeekerVerifyOTP(JobSeekerVerifyOTPRequest) returns (JobSeekerSignupResponse) {};
+    rpc JobSeekerLinkedinSign(JobSeekerLinkedinSignRequest) returns (JobSeekerSignupResponse){};
+    rpc GetEmailByJobSeekerID(GetEmailByJobSeekerIDRequest) returns (GetEmailByJobSeekerIDResponse) {};
+    rpc ActivateSubscriptionPlan(ActivateSubscriptionPlanRequest) returns (ActivateSubscriptionPlanResponse) {};
+}
+
+message ActivateSubscriptionPlanRequest {
+    uint32 job_seeker_id = 1;     // Job Seeker ID
+    uint32 plan_id = 2;            // Job ID for the subscription plan
+}
+
+// Response message for activating a subscription plan
+message ActivateSubscriptionPlanResponse {
+    bool success = 1;             // Whether the activation was successful
+    string message = 2;           // Optional message or error description
+}
+
+message GetEmailByJobSeekerIDRequest {
+    uint64 job_seeker_id = 1;
+}
+
+message GetEmailByJobSeekerIDResponse {
+    string email = 1;
+}
+
+message JobSeekerLinkedinSignRequest {
+    string email = 1;
+    string first_name = 2;
+    string last_name = 3;
+    string phone_number = 4;
+    string date_of_birth = 5;
+    string gender = 6;
+}
+
+message JobSeekerOTPSignUpResponse{
+    string message = 1;
+}
+
+message JobSeekerVerifyOTPRequest {
+    string email = 1; // Email associated with the OTP
+    int32 otp = 2;    // OTP to verify
 }
 
 message JobSeekerSignupRequest {

@@ -44,3 +44,23 @@ type SavedJobsResponse struct {
 	JobID       int64 `json:"job_id" validate:"required"`
 	JobseekerID int64 `json:"jobseeker_id" validate:"required"`
 }
+
+type JobSeekerVerifyOTPRequest struct {
+	Email string `json:"email"` // Email associated with the OTP
+	Otp   int32  `json:"otp"`   // OTP to verify
+}
+
+type OtpResponse struct {
+	Message string `json:"message"`
+}
+
+type OtpVerificationResponse struct {
+	Status           int64                     `json:"status"`
+	Token            string                    `json:"token"`
+	JobSeekerDetails *JobSeekerDetailsResponse `json:"job_seeker_details"`
+}
+
+type SubscriptionPlanResponse struct {
+    Success bool
+    Message string
+}

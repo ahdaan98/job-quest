@@ -26,4 +26,10 @@ type JobSeekerRepository interface {
 	JobSeekerSignUp(jobSeekerDetails models.JobSeekerSignUp) (models.JobSeekerDetailsResponse, error)
 	CheckJobSeekerExistsByEmail(email string) (*domain.JobSeeker, error)
 	FindJobSeekerByEmail(jobSeeker models.JobSeekerLogin) (models.JobSeekerSignUp, error)
+	SaveLinkedinCredentials(jobSeekerDetails models.JobSeekerDetailsResponse) (models.JobSeekerDetailsResponse, error)
+	GetJobSeeker(email string) (models.JobSeekerDetailsResponse, error)
+	IsJobSeekerExist(email string) bool
+	GetJobSeekerEmailByID(id uint) (string, error)
+	ActivateJobSeekerSubscriptionByPlanID(jobSeekerID uint, subscriptionPlanID uint) error
+	IsJobSeekerPlanActive(jobSeekerID uint) (bool, error)
 }

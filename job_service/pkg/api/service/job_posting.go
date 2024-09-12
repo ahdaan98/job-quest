@@ -247,6 +247,32 @@ func (js *JobServer) ApplyJob(ctx context.Context, req *pb.ApplyJobRequest) (*pb
 	}, nil
 }
 
+func (js *JobServer) GetJobApplications(ctx context.Context, req *pb.GetJobApplicationsRequest) (*pb.GetJobApplicationsResponse, error) {
+	employerID, err := strconv.ParseInt(req.EmployerId, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+
+	applications, err := js.jobUseCase.GetApplicants(employerID)
+	if err != nil {
+		return nil, err
+	}
+
+	var applicationResponses []*pb.JobApplication
+	for _, application := range applications {
+		applicationResponse := &pb.JobApplication{
+			Id:          strconv.FormatUint(uint64(application.ID), 10),
+			JobId:       strconv.FormatUint(uint64(application.JobID), 10),
+			JobSeekerId: strconv.FormatUint(uint64(application.JobseekerID), 10),
+			Resume:      application.ResumeURL,
+			CoverLetter: application.CoverLetter,
+		}
+		applicationResponses = append(applicationResponses, applicationResponse)
+	}
+
+	return &pb.GetJobApplicationsResponse{JobApplications: applicationResponses}, nil
+}
+
 func (js *JobServer) SaveJobs(ctx context.Context, req *pb.SaveJobRequest) (*pb.SaveJobResponse, error) {
 	JobID, err := strconv.ParseInt(req.JobId, 10, 64)
 	if err != nil {
@@ -315,4 +341,50 @@ func (js *JobServer) GetSavedJobs(ctx context.Context, req *pb.GetSavedJobsReque
 	}
 
 	return &pb.GetSavedJobsResponse{SavedJobs: savedJobsResponse}, nil
+}
+
+func (js *JobServer) UpdateApplyJob(ctx context.Context, req *pb.UpdateApplyJobRequest) (*pb.UpdateApplyJobResponse, error) {
+	jobSeekerID, jobID, err := js.jobUseCase.UpdateApplyJob(uint(req.ApplyJobId), req.Status)
+	if err != nil {
+		return &pb.UpdateApplyJobResponse{
+			Success: false,
+			Message: "Failed to update job application",
+		}, nil
+	}
+
+	fmt.Println("vall",uint32(jobSeekerID),uint32(jobID))
+
+	return &pb.UpdateApplyJobResponse{
+		Success:     true,
+		JobSeekerId: uint32(jobSeekerID),
+		JobId:       uint32(jobID),
+		Message:     "Job application status updated successfully",
+	}, nil
+}
+
+func (js *JobServer) GetApplicants(ctx context.Context, req *pb.GetAcceptedApplicantsRequest) (*pb.GetAcceptedApplicantsResponse, error) {
+	jobID := req.JobId
+	status := req.Status // Add status to the request if it's part of the query
+
+	// Call the use case method
+	applicants, err := js.jobUseCase.GetApplicantsByStatus(jobID, status)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get applicants: %w", err)
+	}
+
+	// Convert the result to the protobuf response
+	var applicantsResponse []*pb.ApplyJobResponse
+	for _, applicant := range applicants {
+		applicantsResponse = append(applicantsResponse, &pb.ApplyJobResponse{
+			Id:          int64(applicant.ID),
+			JobId:       applicant.JobID,
+			JobseekerId: applicant.JobseekerID,
+			CoverLetter: applicant.CoverLetter,
+			ResumeUrl:   applicant.ResumeURL,
+		})
+	}
+
+	return &pb.GetAcceptedApplicantsResponse{
+		Applicants: applicantsResponse,
+	}, nil
 }

@@ -7,6 +7,7 @@ import (
 	services "Auth/pkg/usecase/interface"
 	"Auth/pkg/utils/models"
 	"errors"
+	"fmt"
 
 	"github.com/jinzhu/copier"
 	"golang.org/x/crypto/bcrypt"
@@ -83,4 +84,56 @@ func (jsu *jobSeekerUseCase) JobSeekerLogin(jobSeeker models.JobSeekerLogin) (*d
 		JobSeeker: jobSeekerDetailsResponse,
 		Token:     tokenString,
 	}, nil
+}
+
+func (jsu *jobSeekerUseCase) JobSeekerLinkedinSign(jobSeeker models.JobSeekerDetailsResponse) (*domain.TokenJobSeeker, error) {
+	exist := jsu.jobSeekerRepository.IsJobSeekerExist(jobSeeker.Email)
+
+	if exist {
+		var err error
+		jobSeeker, err = jsu.jobSeekerRepository.GetJobSeeker(jobSeeker.Email)
+		if err!=nil{
+			return nil, err
+		}
+	} else {
+		var err error
+		jobSeeker, err = jsu.jobSeekerRepository.SaveLinkedinCredentials(jobSeeker)
+		if err!=nil{
+			return nil, err
+		}
+	}
+
+
+	tokenString, err := helper.GenerateTokenJobSeeker(jobSeeker)
+	if err != nil {
+		return &domain.TokenJobSeeker{}, err
+	}
+
+	return &domain.TokenJobSeeker{
+		JobSeeker: jobSeeker,
+		Token:     tokenString,
+	}, nil
+}
+
+func (jsu *jobSeekerUseCase) GetEmailByJobSeekerID(id uint) (string, error) {
+	return jsu.jobSeekerRepository.GetJobSeekerEmailByID(id)
+}
+
+func (juc *jobSeekerUseCase) ActivateSubscriptionPlan(jobSeekerID uint, planID uint) (string, error) {
+    
+    isActive, err := juc.jobSeekerRepository.IsJobSeekerPlanActive(jobSeekerID)
+    if err != nil {
+        return "", fmt.Errorf("error checking active subscription: %v", err)
+    }
+
+    if isActive {
+        return "Subscription plan is already active", nil
+    }
+    
+    err = juc.jobSeekerRepository.ActivateJobSeekerSubscriptionByPlanID(jobSeekerID, planID)
+    if err != nil {
+        return "", fmt.Errorf("error activating subscription plan: %v", err)
+    }
+
+    return "Subscription plan activated successfully", nil
 }

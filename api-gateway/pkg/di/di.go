@@ -5,6 +5,7 @@ import (
 	"github.com/ahdaan67/JobQuest/pkg/api/handler"
 	"github.com/ahdaan67/JobQuest/pkg/client"
 	"github.com/ahdaan67/JobQuest/pkg/config"
+	"github.com/ahdaan67/JobQuest/pkg/helper"
 )
 
 func InitializeAPI(cfg config.Config) (*server.ServerHTTP, error) {
@@ -19,10 +20,14 @@ func InitializeAPI(cfg config.Config) (*server.ServerHTTP, error) {
 	jobSeekerHandler := handler.NewJobSeekerHandler(jobSeekerClient)
 
 	jobClient := client.NewJobClient(cfg)
-	jobHandler := handler.NewJobHandler(jobClient)
+	jobHandler := handler.NewJobHandler(jobClient,jobSeekerClient,cfg)
+
+	helper := helper.NewHelper(&cfg)
+	chatClient := client.NewChatClient(cfg)
+	chatHandler := handler.NewChatHandler(chatClient, helper)
 
 	
-	serverHTTP := server.NewServerHTTP(adminHandler, employerHandler, jobSeekerHandler, jobHandler)
+	serverHTTP := server.NewServerHTTP(adminHandler, employerHandler, jobSeekerHandler, jobHandler, chatHandler)
 
 	return serverHTTP, nil
 }

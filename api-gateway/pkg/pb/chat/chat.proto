@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package chat;
+
+option go_package = "./pkg/pb/chat";
+
+service ChatService {
+    rpc GetFriendChat (GetFriendChatRequest) returns (GetFriendChatResponse){}
+    rpc GroupMessage (GroupMessageRequest) returns (GroupMessageResponse){}
+    rpc GetGroupChat (GetGroupChatRequest) returns (GetGroupChatResponse){}
+}
+
+message GetFriendChatRequest {
+    string UserID = 1;
+    string OffSet = 2;
+    string Limit = 3;
+    string FriendID = 4;
+}
+
+message Message {
+    string MessageID = 1;
+    string sender_id = 2;
+    string recipient_id = 3;
+    string content = 4;
+    string timestamp = 5;
+}
+
+message GetFriendChatResponse {
+    repeated Message FriendChat = 1;
+}
+
+message GroupMessageRequest {
+    string UserID = 1;
+    string GroupID = 2;
+    string Content = 3;
+    string Timestamp = 4;
+}
+
+message GroupMessageResponse {
+    bool Success = 1;
+    string Message = 2;
+}
+
+message GetGroupChatRequest {
+    string UserID = 1;
+    string GroupID = 2;
+    string OffSet = 3;
+    string Limit = 4;
+}
+
+message GetGroupChatResponse {
+    repeated Message GroupChat = 1;
+}

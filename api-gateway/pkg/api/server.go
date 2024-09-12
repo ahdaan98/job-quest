@@ -12,7 +12,7 @@ type ServerHTTP struct {
 	engine *gin.Engine
 }
 
-func NewServerHTTP(adminHandler *handler.AdminHandler, employerHandler *handler.EmployerHandler, jobSeekerHandler *handler.JobSeekerHandler, jobHandler *handler.JobHandler) *ServerHTTP {
+func NewServerHTTP(adminHandler *handler.AdminHandler, employerHandler *handler.EmployerHandler, jobSeekerHandler *handler.JobSeekerHandler, jobHandler *handler.JobHandler,chatHandler *handler.ChatHandler) *ServerHTTP {
 
 	router := gin.New()
 
@@ -27,6 +27,11 @@ func NewServerHTTP(adminHandler *handler.AdminHandler, employerHandler *handler.
 
 	router.POST("/job-seeker/signup", jobSeekerHandler.JobSeekerSignUp)
 	router.POST("/job-seeker/login", jobSeekerHandler.JobSeekerLogin)
+	router.GET("/job-seeker/linkedin/signin", jobSeekerHandler.LinkedinSignIn)
+	router.GET("/job-seeker/linkedin/complete/signin", jobSeekerHandler.CompleteLinkedInSignIn)
+
+	router.POST("/job-seeker/otp/signup", jobSeekerHandler.JobSeekerOTPSignUp)
+	router.POST("/job-seeker/verify/otp", jobSeekerHandler.JobSeekerVerifyOTP)
 
 	jobSeekerRoutes := router.Group("/")
 	jobSeekerRoutes.Use(middleware.JobSeekerAuthMiddleware())
@@ -37,6 +42,8 @@ func NewServerHTTP(adminHandler *handler.AdminHandler, employerHandler *handler.
 		jobSeekerRoutes.GET("/job-seeker/saved-jobs", jobHandler.GetASavedJob)
 		jobSeekerRoutes.POST("/job-seeker/save-jobs", jobHandler.SaveAJob)
 		jobSeekerRoutes.DELETE("/job-seeker/saved-jobs", jobHandler.DeleteSavedJob)
+
+		jobSeekerRoutes.GET("/job-seeker/activate/subscription", jobSeekerHandler.ActivateSubscriptionPlan)
 	}
 
 	// Employer authenticated routes
@@ -48,9 +55,17 @@ func NewServerHTTP(adminHandler *handler.AdminHandler, employerHandler *handler.
 		employerRoutes.GET("/employer/job-postings", jobHandler.GetAJob)
 		employerRoutes.DELETE("/employer/job-postings", jobHandler.DeleteAJob)
 		employerRoutes.PUT("/employer/job-postings", jobHandler.UpdateAJob)
+		employerRoutes.GET("/employer/get-applicants", jobHandler.GetApplicants)
 
 		employerRoutes.GET("/employer/company", employerHandler.GetCompanyDetails)
 		employerRoutes.PUT("/employer/company", employerHandler.UpdateCompany)
+
+		router.GET("/employer/chat", chatHandler.EmployerMessage)
+		employerRoutes.POST("/employer/chats", chatHandler.GetChat)
+		router.GET("/group/:groupID/chat", chatHandler.GroupMessage)
+
+		employerRoutes.PUT("/employer/update/apply/jobs", jobHandler.UpdateApplyJob)
+		employerRoutes.GET("/employer/get/applicants", jobHandler.GetAcceptedApplicants)
 	}
 
 	return &ServerHTTP{engine: router}

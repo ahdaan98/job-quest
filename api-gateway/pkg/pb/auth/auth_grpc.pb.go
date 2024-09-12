@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.4.0
 // - protoc             v5.27.1
-// source: auth/auth.proto
+// source: auth.proto
 
 package auth
 
@@ -144,7 +144,7 @@ var Admin_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "auth/auth.proto",
+	Metadata: "auth.proto",
 }
 
 const (
@@ -387,12 +387,17 @@ var Employer_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "auth/auth.proto",
+	Metadata: "auth.proto",
 }
 
 const (
-	JobSeeker_JobSeekerSignup_FullMethodName = "/auth.JobSeeker/JobSeekerSignup"
-	JobSeeker_JobSeekerLogin_FullMethodName  = "/auth.JobSeeker/JobSeekerLogin"
+	JobSeeker_JobSeekerSignup_FullMethodName          = "/auth.JobSeeker/JobSeekerSignup"
+	JobSeeker_JobSeekerLogin_FullMethodName           = "/auth.JobSeeker/JobSeekerLogin"
+	JobSeeker_JobSeekerOTPSignUp_FullMethodName       = "/auth.JobSeeker/JobSeekerOTPSignUp"
+	JobSeeker_JobSeekerVerifyOTP_FullMethodName       = "/auth.JobSeeker/JobSeekerVerifyOTP"
+	JobSeeker_JobSeekerLinkedinSign_FullMethodName    = "/auth.JobSeeker/JobSeekerLinkedinSign"
+	JobSeeker_GetEmailByJobSeekerID_FullMethodName    = "/auth.JobSeeker/GetEmailByJobSeekerID"
+	JobSeeker_ActivateSubscriptionPlan_FullMethodName = "/auth.JobSeeker/ActivateSubscriptionPlan"
 )
 
 // JobSeekerClient is the client API for JobSeeker service.
@@ -401,6 +406,11 @@ const (
 type JobSeekerClient interface {
 	JobSeekerSignup(ctx context.Context, in *JobSeekerSignupRequest, opts ...grpc.CallOption) (*JobSeekerSignupResponse, error)
 	JobSeekerLogin(ctx context.Context, in *JobSeekerLoginRequest, opts ...grpc.CallOption) (*JobSeekerLoginResponse, error)
+	JobSeekerOTPSignUp(ctx context.Context, in *JobSeekerSignupRequest, opts ...grpc.CallOption) (*JobSeekerOTPSignUpResponse, error)
+	JobSeekerVerifyOTP(ctx context.Context, in *JobSeekerVerifyOTPRequest, opts ...grpc.CallOption) (*JobSeekerSignupResponse, error)
+	JobSeekerLinkedinSign(ctx context.Context, in *JobSeekerLinkedinSignRequest, opts ...grpc.CallOption) (*JobSeekerSignupResponse, error)
+	GetEmailByJobSeekerID(ctx context.Context, in *GetEmailByJobSeekerIDRequest, opts ...grpc.CallOption) (*GetEmailByJobSeekerIDResponse, error)
+	ActivateSubscriptionPlan(ctx context.Context, in *ActivateSubscriptionPlanRequest, opts ...grpc.CallOption) (*ActivateSubscriptionPlanResponse, error)
 }
 
 type jobSeekerClient struct {
@@ -431,12 +441,67 @@ func (c *jobSeekerClient) JobSeekerLogin(ctx context.Context, in *JobSeekerLogin
 	return out, nil
 }
 
+func (c *jobSeekerClient) JobSeekerOTPSignUp(ctx context.Context, in *JobSeekerSignupRequest, opts ...grpc.CallOption) (*JobSeekerOTPSignUpResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(JobSeekerOTPSignUpResponse)
+	err := c.cc.Invoke(ctx, JobSeeker_JobSeekerOTPSignUp_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *jobSeekerClient) JobSeekerVerifyOTP(ctx context.Context, in *JobSeekerVerifyOTPRequest, opts ...grpc.CallOption) (*JobSeekerSignupResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(JobSeekerSignupResponse)
+	err := c.cc.Invoke(ctx, JobSeeker_JobSeekerVerifyOTP_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *jobSeekerClient) JobSeekerLinkedinSign(ctx context.Context, in *JobSeekerLinkedinSignRequest, opts ...grpc.CallOption) (*JobSeekerSignupResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(JobSeekerSignupResponse)
+	err := c.cc.Invoke(ctx, JobSeeker_JobSeekerLinkedinSign_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *jobSeekerClient) GetEmailByJobSeekerID(ctx context.Context, in *GetEmailByJobSeekerIDRequest, opts ...grpc.CallOption) (*GetEmailByJobSeekerIDResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetEmailByJobSeekerIDResponse)
+	err := c.cc.Invoke(ctx, JobSeeker_GetEmailByJobSeekerID_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *jobSeekerClient) ActivateSubscriptionPlan(ctx context.Context, in *ActivateSubscriptionPlanRequest, opts ...grpc.CallOption) (*ActivateSubscriptionPlanResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ActivateSubscriptionPlanResponse)
+	err := c.cc.Invoke(ctx, JobSeeker_ActivateSubscriptionPlan_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // JobSeekerServer is the server API for JobSeeker service.
 // All implementations must embed UnimplementedJobSeekerServer
 // for forward compatibility
 type JobSeekerServer interface {
 	JobSeekerSignup(context.Context, *JobSeekerSignupRequest) (*JobSeekerSignupResponse, error)
 	JobSeekerLogin(context.Context, *JobSeekerLoginRequest) (*JobSeekerLoginResponse, error)
+	JobSeekerOTPSignUp(context.Context, *JobSeekerSignupRequest) (*JobSeekerOTPSignUpResponse, error)
+	JobSeekerVerifyOTP(context.Context, *JobSeekerVerifyOTPRequest) (*JobSeekerSignupResponse, error)
+	JobSeekerLinkedinSign(context.Context, *JobSeekerLinkedinSignRequest) (*JobSeekerSignupResponse, error)
+	GetEmailByJobSeekerID(context.Context, *GetEmailByJobSeekerIDRequest) (*GetEmailByJobSeekerIDResponse, error)
+	ActivateSubscriptionPlan(context.Context, *ActivateSubscriptionPlanRequest) (*ActivateSubscriptionPlanResponse, error)
 	mustEmbedUnimplementedJobSeekerServer()
 }
 
@@ -449,6 +514,21 @@ func (UnimplementedJobSeekerServer) JobSeekerSignup(context.Context, *JobSeekerS
 }
 func (UnimplementedJobSeekerServer) JobSeekerLogin(context.Context, *JobSeekerLoginRequest) (*JobSeekerLoginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method JobSeekerLogin not implemented")
+}
+func (UnimplementedJobSeekerServer) JobSeekerOTPSignUp(context.Context, *JobSeekerSignupRequest) (*JobSeekerOTPSignUpResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method JobSeekerOTPSignUp not implemented")
+}
+func (UnimplementedJobSeekerServer) JobSeekerVerifyOTP(context.Context, *JobSeekerVerifyOTPRequest) (*JobSeekerSignupResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method JobSeekerVerifyOTP not implemented")
+}
+func (UnimplementedJobSeekerServer) JobSeekerLinkedinSign(context.Context, *JobSeekerLinkedinSignRequest) (*JobSeekerSignupResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method JobSeekerLinkedinSign not implemented")
+}
+func (UnimplementedJobSeekerServer) GetEmailByJobSeekerID(context.Context, *GetEmailByJobSeekerIDRequest) (*GetEmailByJobSeekerIDResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetEmailByJobSeekerID not implemented")
+}
+func (UnimplementedJobSeekerServer) ActivateSubscriptionPlan(context.Context, *ActivateSubscriptionPlanRequest) (*ActivateSubscriptionPlanResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ActivateSubscriptionPlan not implemented")
 }
 func (UnimplementedJobSeekerServer) mustEmbedUnimplementedJobSeekerServer() {}
 
@@ -499,6 +579,96 @@ func _JobSeeker_JobSeekerLogin_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _JobSeeker_JobSeekerOTPSignUp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(JobSeekerSignupRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(JobSeekerServer).JobSeekerOTPSignUp(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: JobSeeker_JobSeekerOTPSignUp_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(JobSeekerServer).JobSeekerOTPSignUp(ctx, req.(*JobSeekerSignupRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _JobSeeker_JobSeekerVerifyOTP_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(JobSeekerVerifyOTPRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(JobSeekerServer).JobSeekerVerifyOTP(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: JobSeeker_JobSeekerVerifyOTP_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(JobSeekerServer).JobSeekerVerifyOTP(ctx, req.(*JobSeekerVerifyOTPRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _JobSeeker_JobSeekerLinkedinSign_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(JobSeekerLinkedinSignRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(JobSeekerServer).JobSeekerLinkedinSign(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: JobSeeker_JobSeekerLinkedinSign_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(JobSeekerServer).JobSeekerLinkedinSign(ctx, req.(*JobSeekerLinkedinSignRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _JobSeeker_GetEmailByJobSeekerID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetEmailByJobSeekerIDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(JobSeekerServer).GetEmailByJobSeekerID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: JobSeeker_GetEmailByJobSeekerID_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(JobSeekerServer).GetEmailByJobSeekerID(ctx, req.(*GetEmailByJobSeekerIDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _JobSeeker_ActivateSubscriptionPlan_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ActivateSubscriptionPlanRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(JobSeekerServer).ActivateSubscriptionPlan(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: JobSeeker_ActivateSubscriptionPlan_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(JobSeekerServer).ActivateSubscriptionPlan(ctx, req.(*ActivateSubscriptionPlanRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // JobSeeker_ServiceDesc is the grpc.ServiceDesc for JobSeeker service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -514,7 +684,27 @@ var JobSeeker_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "JobSeekerLogin",
 			Handler:    _JobSeeker_JobSeekerLogin_Handler,
 		},
+		{
+			MethodName: "JobSeekerOTPSignUp",
+			Handler:    _JobSeeker_JobSeekerOTPSignUp_Handler,
+		},
+		{
+			MethodName: "JobSeekerVerifyOTP",
+			Handler:    _JobSeeker_JobSeekerVerifyOTP_Handler,
+		},
+		{
+			MethodName: "JobSeekerLinkedinSign",
+			Handler:    _JobSeeker_JobSeekerLinkedinSign_Handler,
+		},
+		{
+			MethodName: "GetEmailByJobSeekerID",
+			Handler:    _JobSeeker_GetEmailByJobSeekerID_Handler,
+		},
+		{
+			MethodName: "ActivateSubscriptionPlan",
+			Handler:    _JobSeeker_ActivateSubscriptionPlan_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "auth/auth.proto",
+	Metadata: "auth.proto",
 }

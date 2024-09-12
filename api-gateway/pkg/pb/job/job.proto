@@ -21,7 +21,30 @@ service Job {
     rpc SaveJobs(SaveJobRequest) returns (SaveJobResponse){};
     rpc DeleteSavedJob(DeleteSavedJobRequest) returns (DeleteSavedJobResponse){};
     rpc GetSavedJobs(GetSavedJobsRequest) returns (GetSavedJobsResponse) {};
+    rpc UpdateApplyJob(UpdateApplyJobRequest) returns (UpdateApplyJobResponse);
+    rpc GetApplicants(GetAcceptedApplicantsRequest) returns (GetAcceptedApplicantsResponse);
 } 
+
+message UpdateApplyJobRequest {
+    uint32 apply_job_id = 1;
+    string status = 2;  // New status, e.g., "accepted"
+}
+
+message UpdateApplyJobResponse {
+    bool success = 1;
+    string message = 2; // Optional message or error description
+    uint32 job_seeker_id = 3; // Job seeker ID related to the updated application
+    uint32 job_id = 4;
+}
+
+message GetAcceptedApplicantsRequest {
+    int64 job_id = 1;
+    string status = 2;  // Status to filter applicants, e.g., "accepted"
+}
+
+message GetAcceptedApplicantsResponse {
+    repeated ApplyJobResponse applicants = 1;
+}
 
 message GetSavedJobsRequest {
     string user_id = 1;

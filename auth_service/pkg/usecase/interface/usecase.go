@@ -20,4 +20,7 @@ type EmployerUseCase interface {
 type JobSeekerUseCase interface {
 	JobSeekerLogin(jobSeeker models.JobSeekerLogin) (*domain.TokenJobSeeker, error)
 	JobSeekerSignUp(jobSeeker models.JobSeekerSignUp) (*domain.TokenJobSeeker, error)
+	JobSeekerLinkedinSign(jobSeeker models.JobSeekerDetailsResponse) (*domain.TokenJobSeeker, error)
+	GetEmailByJobSeekerID(id uint) (string,error)
+	ActivateSubscriptionPlan(jobSeekerID uint, jobID uint) (string, error)
 }

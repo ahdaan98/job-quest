@@ -68,3 +68,4 @@ type UserData struct {
 	CompanyName string `json:"company_name"`
 	Website     string `json:"website"`
 }
+

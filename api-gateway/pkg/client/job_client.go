@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"mime/multipart"
 	"strconv"
 
@@ -238,6 +239,8 @@ func (jc *jobClient) ApplyJob(jobApplication models.ApplyJob, file *multipart.Fi
 		ResumeData:  fileData,
 	}
 
+	fmt.Println("job id:",req.JobId)
+
 	grpcResponse, err := jc.Client.ApplyJob(context.Background(), req)
 	if err != nil {
 		return response, err
@@ -251,6 +254,39 @@ func (jc *jobClient) ApplyJob(jobApplication models.ApplyJob, file *multipart.Fi
 		ResumeURL:   grpcResponse.ResumeUrl,
 	}
 
+	return response, nil
+}
+
+func (jc *jobClient) GetApplicants(employerID int64) ([]models.ApplyJobResponse, error) {
+	var response []models.ApplyJobResponse
+	req := &pb.GetJobApplicationsRequest{
+		EmployerId: strconv.FormatInt(employerID, 10),
+	}
+	grpcResponse, err := jc.Client.GetJobApplications(context.Background(), req)
+	if err != nil {
+		return response, err
+	}
+	for _, v := range grpcResponse.JobApplications {
+		jobID, err := strconv.ParseUint(v.JobId, 10, 64)
+		if err != nil {
+			return response, err
+		}
+		jobseekerID, err := strconv.ParseUint(v.JobSeekerId, 10, 64)
+		if err != nil {
+			return response, err
+		}
+		applicationID, err := strconv.ParseUint(v.Id, 10, 64)
+		if err != nil {
+			return response, err
+		}
+		response = append(response, models.ApplyJobResponse{
+			ID:          uint(applicationID),
+			JobID:       int64(jobID),
+			JobseekerID: int64(jobseekerID),
+			CoverLetter: v.CoverLetter,
+			ResumeURL:   v.Resume,
+		})
+	}
 	return response, nil
 }
 
@@ -334,4 +370,70 @@ func (jc *jobClient) GetASavedJob(userID int32) ([]models.SavedJobsResponse, err
 
 	fmt.Println("saved jobs", savedJobs)
 	return savedJobs, nil
+}
+
+// UpdateApplyJob updates the status of a job application
+// UpdateApplyJob updates the status of a job application and returns job seeker ID
+func (jc *jobClient) UpdateApplyJob(applyJobID uint64, status string) (uint, uint, error) {
+    // Construct the request message for updating a job application
+    req := &pb.UpdateApplyJobRequest{
+        ApplyJobId: uint32(applyJobID),
+        Status:     status,
+    }
+
+    // Call the gRPC method
+    response, err := jc.Client.UpdateApplyJob(context.Background(), req)
+    if err != nil {
+        log.Printf("gRPC error: %v", err)
+        return 0, 0, err
+    }
+	fmt.Println("jlka",response.JobSeekerId,response.JobId)
+
+    // Debug logging
+    log.Printf("gRPC response: %+v", response)
+
+    // Check if the operation was successful
+    if !response.Success {
+        return 0, 0, fmt.Errorf("failed to update job application status")
+    }
+
+    return uint(response.JobSeekerId), uint(response.JobId), nil
+}
+
+// GetAcceptedApplicants retrieves the accepted applicants for a given job ID
+func (jc *jobClient) GetAcceptedApplicants(jobID int64, status string) ([]models.ApplyJobResponse, error) {
+    // Construct the request message for getting accepted applicants
+    req := &pb.GetAcceptedApplicantsRequest{
+        JobId:  jobID,
+        Status: status,
+    }
+
+    // Call the gRPC method
+    response, err := jc.Client.GetApplicants(context.Background(), req)
+    if err != nil {
+        log.Printf("gRPC error: %v", err)
+        return nil, err
+    }
+
+    // Debug logging
+    log.Printf("gRPC response: %+v", response)
+
+    if response == nil {
+        log.Println("Received nil response from gRPC")
+        return nil, fmt.Errorf("received nil response from gRPC")
+    }
+
+    // Convert gRPC response to internal model
+    var applicants []models.ApplyJobResponse
+    for _, app := range response.GetApplicants() {
+        applicants = append(applicants, models.ApplyJobResponse{
+            ID:          uint(app.Id),
+            JobID:       app.JobId,
+            JobseekerID: app.JobseekerId,
+            CoverLetter: app.CoverLetter,
+            ResumeURL:   app.ResumeUrl,
+        })
+    }
+
+    return applicants, nil
 }

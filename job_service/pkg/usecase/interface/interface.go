@@ -13,7 +13,10 @@ type JobUseCase interface {
 	GetJobDetails(jobID int32) (models.JobOpeningResponse, error)
 	UpdateAJob(employerID int32, jobID int32, jobDetails models.JobOpening) (models.JobOpeningResponse, error)
 	ApplyJob(jobApplication models.ApplyJob, resumeData []byte) (models.ApplyJobResponse, error)
+	GetApplicants(employerID int64) ([]models.ApplyJobResponse, error)
 	SaveJobs(jobID, userID int64) (models.SavedJobsResponse, error)
 	DeleteSavedJob(jobID, userID int32) error
 	GetSavedJobs(userIdInt int32) ([]models.SavedJobsResponse, error)
+	UpdateApplyJob(applyJobID uint, status string) (uint, uint, error)
+	GetApplicantsByStatus(jobID int64, status string) ([]models.ApplyJobResponse, error)
 }

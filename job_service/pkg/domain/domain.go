@@ -49,6 +49,7 @@ type ApplyJob struct {
 	Resume      []byte `json:"resume" validate:"required"`
 	ResumeURL   string `json:"resume_url" validate:"required"`
 	CoverLetter string `json:"cover_letter" validate:"lte=500"`
+	Status      string `json:"status" gorm:"default:'pending'"`
 }
 
 type ApplyJobResponse struct {

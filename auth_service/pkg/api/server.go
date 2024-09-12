@@ -25,7 +25,6 @@ func NewGRPCServer(cfg config.Config, adminServer pb.AdminServer, employerServer
 	pb.RegisterAdminServer(newServer, adminServer)
 	pb.RegisterEmployerServer(newServer, employerServer)
 	pb.RegisterJobSeekerServer(newServer, jobseekerServer)
-
 	return &Server{
 		server:   newServer,
 		listener: lis,
