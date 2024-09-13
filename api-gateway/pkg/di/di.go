@@ -28,8 +28,12 @@ func InitializeAPI(cfg config.Config) (*server.ServerHTTP, error) {
 
 	v := handler.NewVideoCallHandler()
 
+
+	fc := client.NewfollowCompanyClient(cfg)
+	fh := handler.NewFollowCompanyHandler(fc, employerClient)
+
 	
-	serverHTTP := server.NewServerHTTP(adminHandler, employerHandler, jobSeekerHandler, jobHandler, chatHandler, v)
+	serverHTTP := server.NewServerHTTP(adminHandler, employerHandler, jobSeekerHandler, jobHandler, chatHandler, v, fh)
 
 	return serverHTTP, nil
 }

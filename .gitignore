@@ -1,3 +1,4 @@
 job_service/.env
 auth_service/.env
 api-gateway/.env
+follow_service/.env

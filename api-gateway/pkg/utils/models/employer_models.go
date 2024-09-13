@@ -62,3 +62,8 @@ type EmployerDetails struct {
 	Contact_phone_number uint   `json:"contact_phone_number"`
 	Password             string `json:"password"`
 }
+
+type FEmployer struct {
+	ID                   uint   `json:"id"`
+	Company_name         string `json:"company_name"`
+}

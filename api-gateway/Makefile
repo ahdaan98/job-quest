@@ -6,3 +6,6 @@ job_pb:
 
 auth_pb:
 	protoc --proto_path=./pkg/pb/auth --go_out=paths=source_relative:./pkg/pb/auth --go-grpc_out=paths=source_relative:./pkg/pb/auth ./pkg/pb/auth/auth.proto
+
+conn_pb:
+	protoc --proto_path=./pkg/pb/connection --go_out=paths=source_relative:./pkg/pb/connection --go-grpc_out=paths=source_relative:./pkg/pb/connection ./pkg/pb/connection/connection.proto

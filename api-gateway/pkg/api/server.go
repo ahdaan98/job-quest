@@ -12,7 +12,7 @@ type ServerHTTP struct {
 	engine *gin.Engine
 }
 
-func NewServerHTTP(adminHandler *handler.AdminHandler, employerHandler *handler.EmployerHandler, jobSeekerHandler *handler.JobSeekerHandler, jobHandler *handler.JobHandler,chatHandler *handler.ChatHandler, videocallHandler *handler.VideoCallHandler) *ServerHTTP {
+func NewServerHTTP(adminHandler *handler.AdminHandler, employerHandler *handler.EmployerHandler, jobSeekerHandler *handler.JobSeekerHandler, jobHandler *handler.JobHandler, chatHandler *handler.ChatHandler, videocallHandler *handler.VideoCallHandler,followCompanyHandler *handler.FollowCompanyHandler) *ServerHTTP {
 
 	router := gin.New()
 
@@ -51,6 +51,12 @@ func NewServerHTTP(adminHandler *handler.AdminHandler, employerHandler *handler.
 		jobSeekerRoutes.DELETE("/job-seeker/saved-jobs", jobHandler.DeleteSavedJob)
 
 		jobSeekerRoutes.GET("/job-seeker/activate/subscription", jobSeekerHandler.ActivateSubscriptionPlan)
+
+		jobSeekerRoutes.POST("/follow", followCompanyHandler.FollowCompany)
+		jobSeekerRoutes.POST("/unfollow", followCompanyHandler.UnfollowCompany)
+		jobSeekerRoutes.GET("/isfollowing/:userID/:companyID", followCompanyHandler.IsFollowingCompany)
+		jobSeekerRoutes.GET("/followedcompanies/:userID", followCompanyHandler.GetFollowedCompanies)
+		jobSeekerRoutes.GET("/checkfollowrequest/:userID/:companyID", followCompanyHandler.CheckFollowRequestExists)
 	}
 
 	// Employer authenticated routes

@@ -14,6 +14,7 @@ type Config struct {
 	JobQuestAuth string `mapstructure:"JobQuest_Auth"`
 	JobQuestJob  string `mapstructure:"JobQuest_Job"`
 	ChatSvcUrl   string `mapstructure:"CHAT_SVC_URL"`
+	JobQuestFollow string `mapstructure:"JobQuest_follow"`
 
 	KafkaPort  string `mapstructure:"KAFKA_PORT"`
 	KafkaTopic string `mapstructure:"KAFKA_TOPIC"`

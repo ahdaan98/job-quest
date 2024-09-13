@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package job;
+option go_package = "./pkg/pb/connection";
+
+service CompanyService {
+    rpc FollowCompany(FollowCompanyRequest) returns (FollowCompanyResponse);
+    rpc UnfollowCompany(UnfollowCompanyRequest) returns (UnfollowCompanyResponse);
+    rpc IsFollowingCompany(IsFollowingCompanyRequest) returns (IsFollowingCompanyResponse);
+    rpc GetFollowedCompanies(GetFollowedCompaniesRequest) returns (GetFollowedCompaniesResponse);
+    rpc CheckFollowRequestExists(CheckFollowRequestExistsRequest) returns (CheckFollowRequestExistsResponse);
+}
+
+message FollowCompanyRequest {
+    uint32 user_id = 1;
+    uint32 company_id = 2;
+}
+
+message FollowCompanyResponse {
+    bool success = 1;
+}
+
+message UnfollowCompanyRequest {
+    uint32 user_id = 1;
+    uint32 company_id = 2;
+}
+
+message UnfollowCompanyResponse {
+    bool success = 1;
+}
+
+message IsFollowingCompanyRequest {
+    uint32 user_id = 1;
+    uint32 company_id = 2;
+}
+
+message IsFollowingCompanyResponse {
+    bool is_following = 1;
+}
+
+message GetFollowedCompaniesRequest {
+    uint32 user_id = 1;
+}
+
+message CompanyDetails {
+    uint32 id = 1;
+    string name = 2;
+    string description = 3;
+}
+
+message GetFollowedCompaniesResponse {
+    repeated int32 id=1;
+}
+
+message CheckFollowRequestExistsRequest {
+    uint32 user_id = 1;
+    uint32 company_id = 2;
+}
+
+message CheckFollowRequestExistsResponse {
+    bool exists = 1;
+}
